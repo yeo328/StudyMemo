@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yeo.studywebmemo.mappers.MemoMapper">
+    <update id="updateByIndex">
+        update `study_web`.`memos`
+        set `text`=#{text}
+        where `index` = #{index}
+        limit 1;
+
+    </update>
+
+    <delete id="deleteByIndex">
+    <!--DELETE FROM [ 테이블 ] WHERE [ 조건 ]-->
+        delete
+        from `study_web`.`memos`
+        where `index`=#{index}
+        limit 1
+    </delete>
+    <!--    MemoMapper가 가지고 있는 id(insert id = "insert")와 일치해야함-->
+    <insert id="insert"
+            useGeneratedKeys="true"
+            keyColumn="index"
+            keyProperty="index"
+            parameterType="com.yeo.studywebmemo.entities.MemoEntity">
+        insert into `study_web`.`memos`(`datetime`, `nickname`, `text`)
+#            MemoEntity 의 이름과 같아야함 command+클릭 눌러서 확인해보기
+            value (#{datetime}, #{nickname}, #{text})
+    </insert>
+    <select id="selectAll"
+            resultType="com.yeo.studywebmemo.entities.MemoEntity">
+        select `index`    as `index`,
+               `datetime` as `datetime`,
+               `nickname` as `nickname`,
+               `text`     as `text`
+        from `study_web`.`memos`
+        order by `index` desc
+    </select>
+    <select id="selectCount"
+            resultType="int">
+        select count(0) as `count`
+        from `study_web`.`memos`
+        <if test='searchCriterion.equals("content")'><!--#테스트의 조건이 참일때 쿼리에 포함을 시킴.-->
+            where `text` like concat('%',#{searchQuery}, '%')
+        </if>
+        <if test='searchCriterion.equals("nickname")'>
+            where binary `nickname` = #{searchQuery}
+        </if>
+
+    </select>
+    <select id="selectByPage"
+    resultType="com.yeo.studywebmemo.entities.MemoEntity">
+        select `index`    as `index`,
+               `datetime` as `datetime`,
+               `nickname` as `nickname`,
+               `text`     as `text`
+        from `study_web`.`memos`
+        <if test='searchCriterion.equals("content")'><!--#테스트의 조건이 참일때 쿼리에 포함을 시킴.-->
+            where `text` like concat('%',#{searchQuery}, '%')
+        </if>
+        <if test='searchCriterion.equals("nickname")'>
+            where binary `nickname` = #{searchQuery}
+        </if>
+        order by `index` desc
+        limit #{pagingModel.pageCount} offset #{pagingModel.offset}
+              # memoMapper 인터페이스의 @Param의 value값과 일치해야함.
+
+    </select>
+</mapper>
+
+<!-- xml 은 왜 쓰는거지
+코드작성순서
+서버통신? 이해가 잘 안돼 RequestParam... 이런애들 Param? -->
